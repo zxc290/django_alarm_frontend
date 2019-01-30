@@ -51,3 +51,13 @@ export const multiDeleteRule = params => {
 export const getRules = () => {
   return axios.get(`${base}/rules/`)
 };
+
+// 更新报警规则
+export const updateAlarmRule = (params, id) => {
+  return axios.put(`${base}/update_alarm_rule/${id}/`, params)
+};
+
+// 更新报警收件人
+export const updateAlarmReceiver = (params, id) => {
+  return axios.put(`${base}/update_alarm_receiver/${id}/`, params)
+};

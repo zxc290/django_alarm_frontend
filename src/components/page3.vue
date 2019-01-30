@@ -31,14 +31,14 @@
               <!--<el-button type="danger" @click="handleSearch">搜索</el-button>-->
               <!--</el-form-item>-->
               <el-form-item>
-                <el-button type="primary" @click="handleClickAddAlarmReceiver" icon="el-icon-plus">新建</el-button>
+                <el-button type="primary" @click="handleEditAlarmReceiver" icon="el-icon-plus">编辑</el-button>
               </el-form-item>
               <el-form-item>
-                <el-button type="danger" @click="handleMultiDelete">批量删除</el-button>
+                <el-button type="danger" @click="handleDeleteAlarmReceiver">删除</el-button>
               </el-form-item>
             </el-form>
             <!--<el-table :data="FilteredTableData" @selection-change="handleSelectionChange">-->
-            <el-table :data="alarmReceivers" @selection-change="handleSelectionChange">
+            <el-table :data="alarmReceivers" @selection-change="handleAlarmReceiverSelectionChange">
               <el-table-column type="selection" width="55">
               </el-table-column>
               <el-table-column label="用户id" width="180" prop="userid" sortable>
@@ -64,17 +64,17 @@
               </el-table-column>
             </el-table>
 
-            <el-dialog title="添加报警收件人" :visible.sync="addAlarmReceiverFormVisible" center>
-              <el-form ref="form" :model="addAlarmReceiverForm">
+            <el-dialog title="编辑报警收件人" :visible.sync="editAlarmReceiverFormVisible" center>
+              <el-form ref="form" :model="editAlarmReceiverForm">
                 <el-form-item label="收件人" :label-width="formLabelWidth">
-                  <el-select v-model="addAlarmReceiverForm.user_id" placeholder="请选择收件人" style="width: 100%">
+                  <el-select multiple v-model="editAlarmReceiverForm.user_id_list" placeholder="请选择收件人" style="width: 100%" @change="handleAlarmReceiverChange">
                     <el-option v-for="(item, index) in users" :key="index" :label="item.useridentity" :value="item.userid"></el-option>
                   </el-select>
                 </el-form-item>
               </el-form>
               <div slot="footer" class="dialog-footer">
-                <el-button @click="cancelAddAlarmReceiverForm">取 消</el-button>
-                <el-button type="primary" @click="submitAddAlarmReceiverForm">确 定</el-button>
+                <el-button @click="cancelEditAlarmReceiverForm">取 消</el-button>
+                <el-button type="primary" @click="submitEditAlarmReceiverForm">确 定</el-button>
               </div>
             </el-dialog>
 
@@ -192,7 +192,7 @@
 </template>
 
 <script>
-  import { getDetail, addRule, editRule, deleteRule, multiDeleteRule, getInitialOptions } from "../api/api";
+  import { updateAlarmRule, updateAlarmReceiver, getDetail, addRule, editRule, deleteRule, multiDeleteRule, getInitialOptions } from "../api/api";
 
   export default {
     name: "page3",
@@ -221,22 +221,23 @@
         gameRule: '',
         // 默认报警表单
         alarmRuleForm: {
-          'alarm_id': '',
           'rule_id': '',
         },
         // 新增报警收件人表单
-        addAlarmReceiverForm: {
-          'alarm_id': '',
-          'user_id': '',
+        editAlarmReceiverForm: {
+          'user_id_list': [],
         },
-        addAlarmReceiverFormVisible: false,
+        editAlarmReceiverFormVisible: false,
         // 游戏报警表单
         gameRuleForm: {
           'alarm_id': '',
           'game': '',
           'rule_id': '',
         },
-
+        // 表单报警收件人选中项
+        alarmReceiverChange: [],
+        // 列表报警收件人选中项
+        alarmReceiverSelection: [],
 
         formLabelWidth: '120px',
         // 路由
@@ -294,16 +295,44 @@
         // console.log(this.alarmRuleValue)
         // console.log(value)
       },
-
+      // 保存报警规则
       handleSaveAlarmRule() {
-        let data = this.alarmRuleForm;
-        data.alarm_id = this.id;
+        this.$confirm('确认保存？').then(() => {
+          let data = this.alarmRuleForm;
+          let alarmId = this.id;
+          updateAlarmRule(data, alarmId).then(res => {
+            let data = res.data;
+            if (data.code === 1) {
+              this.messageType = 'success';
+
+            } else if (data.code ===0) {
+              this.messageType = 'error';
+            }
+            this.alertMessage(data.message);
+          });
+        }).catch(() => {
+
+        });
         // 提交请求
         // console.log(this.id)
       },
-
+      // 列表报警收件人变化
+      handleAlarmReceiverSelectionChange(val) {
+        this.alarmReceiverSelection = val;
+      },
+      // 编辑报警收件人表单
+      handleEditAlarmReceiver() {
+        // 清空默认收件人
+        this.editAlarmReceiverForm.user_id_list = [];
+        // 填充默认收件人
+        // console.log(this.alarmReceivers)
+        this.alarmReceivers.forEach(data => this.editAlarmReceiverForm.user_id_list.push(data.userid));
+        // console.log(this.editAlarmReceiverForm.user_id_list)
+        this.editAlarmReceiverFormVisible = true;
+      },
+      // 删除报警收件人
       handleDeleteAlarmReceiver() {
-        this.$confirm('确认删除？').then(_ => {
+        this.$confirm('确认删除？').then(() => {
           // let game = row.game;
           // let receiver = row.receiver;
           // let alarmId = this.id;
@@ -322,24 +351,56 @@
             this.alertMessage(data.message);
           })
         })
-        // .catch(_ => {});
+        .catch(() => {
+
+        });
+      },
+      // 报警收件人选项变化
+      handleAlarmReceiverChange(val) {
+        this.alarmReceiverChange = val;
+        console.log(this.alarmReceiverChange)
+      },
+      // 提交报警收件人
+      submitEditAlarmReceiverForm() {
+        console.log(this.users)
+        let editAlarmReceiverForm = this.editAlarmReceiverForm;
+        // let user_id_list = this.editAlarmReceiverForm.user_id_list;
+        // console.log(that.editAlarmReceiverForm.user_id_list);
+        this.$confirm('确认保存？').then(() => {
+          let data = editAlarmReceiverForm;
+          let alarmId = this.id;
+          updateAlarmReceiver(data, alarmId).then(res => {
+            let data = res.data;
+            if (data.code === 1) {
+              this.messageType = 'success';
+              let alarmData = data.alarm;
+              console.log(alarmData);
+              // console.log(alarmData.receivers.split(',').forEach(data => parseInt(data)));
+              // this.editAlarmReceiverForm.user_id_list = alarmData.receivers.split(',').forEach(data => parseInt(data))
+            } else if (data.code ===0) {
+              this.messageType = 'error';
+            }
+            this.alertMessage(data.message);
+          });
+        })
+          .catch(() => {
+
+          });
+        // console.log('333')
+        // console.log(this.editAlarmReceiverForm.user_id_list)
+        // updateAlarmReceiver
+        this.editAlarmReceiverForm.user_id_list = this.alarmReceiverChange;
+        // let
+        // console.log(this.editAlarmReceiverForm)
+        this.editAlarmReceiverForm.user_id = '';
+        this.editAlarmReceiverForm.alarm_id = '';
+        this.editAlarmReceiverFormVisible = false;
       },
 
-      handleClickAddAlarmReceiver() {
-        this.addAlarmReceiverFormVisible = true;
-      },
-
-      submitAddAlarmReceiverForm() {
-        console.log(this.addAlarmReceiverForm)
-        this.addAlarmReceiverForm.user_id = '';
-        this.addAlarmReceiverForm.alarm_id = '';
-        this.addAlarmReceiverFormVisible = false;
-      },
-
-      cancelAddAlarmReceiverForm() {
-        this.addAlarmReceiverForm.user_id = '';
-        this.addAlarmReceiverForm.alarm_id = '';
-        this.addAlarmReceiverFormVisible = false;
+      cancelEditAlarmReceiverForm() {
+        this.editAlarmReceiverForm.user_id = '';
+        this.editAlarmReceiverForm.alarm_id = '';
+        this.editAlarmReceiverFormVisible = false;
       },
 
       handleAddNew() {
@@ -375,7 +436,7 @@
       },
       // 删除列表单项
       handleDelete(index, row) {
-        this.$confirm('确认删除？').then(_ => {
+        this.$confirm('确认删除？').then(() => {
           // let game = row.game;
           // let receiver = row.receiver;
           // let alarmId = this.id;
@@ -392,13 +453,15 @@
             this.alertMessage(data.message);
           })
         })
-        // .catch(_ => {});
+        .catch(() => {
+
+        });
 
       },
 
       // 批量删除
       handleMultiDelete() {
-        this.$confirm('确认批量删除？').then(_ => {
+        this.$confirm('确认批量删除？').then(() => {
           let alarmId = this.id;
           let length = this.multipleSelection.length;
           for (let i = 0; i < length; i++){
@@ -415,7 +478,9 @@
             this.alertMessage(data.message);
           })
         })
-        // .catch(_ => {});
+        .catch(() => {
+
+        });
       },
       getAlarmDetail(){
         let alarmId = this.id;
@@ -425,8 +490,9 @@
           if (data.code ===1 ) {
             this.messageType = 'success';
 
-            this.gameValue = '';
-            this.gameRuleValue = '';
+            this.gameRuleForm.game = '';
+            this.gameRuleForm.rule_id = '';
+
 
             this.hasGameSettings = data.alarm_rule_dict.receivers_by_games;
 
@@ -506,10 +572,10 @@
 
       handleClose(done) {
         this.$confirm('确认关闭？')
-          .then(_ => {
+          .then(() => {
             done();
           })
-          .catch(_ => {});
+          .catch(() => {});
       },
       alertMessage(message) {
         // this.$message({
