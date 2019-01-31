@@ -52,7 +52,7 @@ export const getRules = () => {
   return axios.get(`${base}/rules/`)
 };
 
-// 更新报警规则
+// 更新报警发送规则
 export const updateAlarmRule = (params, id) => {
   return axios.put(`${base}/update_alarm_rule/${id}/`, params)
 };
@@ -60,4 +60,14 @@ export const updateAlarmRule = (params, id) => {
 // 更新报警收件人
 export const updateAlarmReceiver = (params, id) => {
   return axios.put(`${base}/update_alarm_receiver/${id}/`, params)
+};
+
+// 更新游戏发送规则
+export const updateGameRule = (params, id) => {
+  return axios.put(`${base}/update_game_rule/${id}/`, params)
+};
+
+// 更新游戏收件人
+export const updateGameReceiver = (params, id) => {
+  return axios.put(`${base}/update_game_receiver/${id}/`, params)
 };

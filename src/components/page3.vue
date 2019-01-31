@@ -8,7 +8,7 @@
             <el-form :inline="true" :model="alarmRuleForm" class="demo-form-inline">
               <el-form-item>
                 <!--<el-select v-model="alarmRuleForm.rule_id" placeholder="请选择"  @change="handleSelectRule" >-->
-                <el-select v-model="alarmRuleForm.rule_id" placeholder="请选择规则"  @change="handleSelectRule" >
+                <el-select v-model="alarmRuleForm.rule_id" placeholder="请选择规则">
                   <el-option
                     v-for="item in rules"
                     :key="item.id"
@@ -26,16 +26,16 @@
 
         <el-tab-pane label="默认发送收件人" name="default_receivers">
           <el-row>
-            <el-form :inline="true"  class="demo-form-inline" style="float: left; margin: 20px 0;">
+            <el-form :inline="true"  class="demo-form-inline" style="float: left;">
               <!--<el-form-item>-->
               <!--<el-button type="danger" @click="handleSearch">搜索</el-button>-->
               <!--</el-form-item>-->
               <el-form-item>
-                <el-button type="primary" @click="handleEditAlarmReceiver" icon="el-icon-plus">编辑</el-button>
+                <el-button type="danger" @click="handleEditAlarmReceiver">编辑</el-button>
               </el-form-item>
-              <el-form-item>
-                <el-button type="danger" @click="handleDeleteAlarmReceiver">删除</el-button>
-              </el-form-item>
+              <!--<el-form-item>-->
+                <!--<el-button type="danger" @click="handleDeleteAlarmReceiver">删除</el-button>-->
+              <!--</el-form-item>-->
             </el-form>
             <!--<el-table :data="FilteredTableData" @selection-change="handleSelectionChange">-->
             <el-table :data="alarmReceivers" @selection-change="handleAlarmReceiverSelectionChange">
@@ -56,12 +56,12 @@
                   <span>{{ scope.row.emailaddress }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作">
-                <template slot-scope="scope">
-                  <!--<el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>-->
-                  <el-button size="mini" type="danger" @click="handleDeleteAlarmReceiver(scope.$index, scope.row)">删除</el-button>
-                </template>
-              </el-table-column>
+              <!--<el-table-column label="操作">-->
+                <!--<template slot-scope="scope">-->
+                  <!--&lt;!&ndash;<el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>&ndash;&gt;-->
+                  <!--<el-button size="mini" type="danger" @click="handleDeleteAlarmReceiver(scope.$index, scope.row)">删除</el-button>-->
+                <!--</template>-->
+              <!--</el-table-column>-->
             </el-table>
 
             <el-dialog title="编辑报警收件人" :visible.sync="editAlarmReceiverFormVisible" center>
@@ -81,12 +81,12 @@
           </el-row>
         </el-tab-pane>
 
-        <el-tab-pane label="游戏发送规则" name="game_rule">
+        <el-tab-pane label="游戏发送规则" name="game_rule" v-if="hasGameSettings">
           <el-row>
             <el-form :inline="true" :model="gameRuleForm" class="demo-form-inline" style="float: left">
               <el-form-item label="游戏">
                 <!--<el-select v-model="alarmRuleForm.rule_id" placeholder="请选择"  @change="handleSelectRule" >-->
-                <el-select :disabled="!hasGameSettings" v-model="gameRuleForm.game" placeholder="请选择游戏" style="float: left; margin-bottom: 20px" @change="handleSelectGame">
+                <el-select v-model="gameRuleForm.game" placeholder="请选择游戏" style="float: left; margin-bottom: 20px" @change="handleSelectGameRuleGame">
                   <el-option
                     v-for="item in alarmGames"
                     :key="item.game"
@@ -97,7 +97,7 @@
               </el-form-item>
 
               <el-form-item label="规则">
-                <el-select :disabled="!hasGameSettings" v-model="gameRuleForm.rule_id" placeholder="请选择规则" style="float: left; margin-bottom: 20px" @change="handleSelectGame">
+                <el-select v-model="gameRuleForm.rule_id" placeholder="请选择规则" style="float: left; margin-bottom: 20px">
                   <el-option
                     v-for="item in rules"
                     :key="item.id"
@@ -107,15 +107,40 @@
                 </el-select>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="handleSaveAlarmRule">保存</el-button>
+                <el-button type="primary" @click="handleSaveGameRule">保存</el-button>
+              </el-form-item>
+            </el-form>
+          </el-row>
+        </el-tab-pane>
+
+        <el-tab-pane label="游戏发送收件人" name="game_receivers" v-if="hasGameSettings">
+          <el-row>
+            <el-form :inline="true" :model="editGameReceiverForm" class="demo-form-inline" style="float: left">
+              <el-form-item label="游戏">
+                <!--<el-select v-model="alarmRuleForm.rule_id" placeholder="请选择"  @change="handleSelectRule" >-->
+                <el-select v-model="editGameReceiverForm.game" placeholder="请选择游戏" style="float: left;" @change="handleSelectGameReceiverGame">
+                  <el-option
+                    v-for="item in alarmGames"
+                    :key="item.game"
+                    :label="item.game"
+                    :value="item.game">
+                  </el-option>
+                </el-select>
               </el-form-item>
             </el-form>
           </el-row>
 
-        </el-tab-pane>
+          <el-row>
+          <el-form :inline="true"  class="demo-form-inline" style="float: left;">
+            <el-form-item>
+              <el-button type="danger" @click="handleEditGameReceiver">编辑</el-button>
+            </el-form-item>
+            <!--<el-form-item>-->
+              <!--<el-button type="danger" @click="handleDeleteGameReceiver">删除</el-button>-->
+            <!--</el-form-item>-->
+          </el-form>
 
-        <el-tab-pane label="游戏发送收件人" name="game_receivers">
-          <el-table :data="gameReceivers" @selection-change="handleSelectionChange">
+          <el-table :data="gameReceivers" @selection-change="handleGameReceiverSelectionChange">
             <el-table-column type="selection" width="55">
             </el-table-column>
             <el-table-column label="用户名" width="180" prop="useridentity" sortable>
@@ -128,13 +153,31 @@
                 <span>{{ scope.row.emailaddress }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作">
-              <template slot-scope="scope">
-                <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-              </template>
-            </el-table-column>
+            <!--<el-table-column label="操作">-->
+              <!--<template slot-scope="scope">-->
+                <!--<el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>-->
+                <!--<el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>-->
+              <!--</template>-->
+            <!--</el-table-column>-->
           </el-table>
+
+          <el-dialog title="编辑游戏收件人" :visible.sync="editGameReceiverFormVisible" center>
+            <el-form ref="form" :model="editGameReceiverForm">
+              <el-form-item label="游戏操作id" :label-width="formLabelWidth" v-show="false">
+                <el-input v-model="editGameReceiverForm.id"></el-input>
+              </el-form-item>
+              <el-form-item label="收件人" :label-width="formLabelWidth">
+                <el-select multiple v-model="editGameReceiverForm.user_id_list" placeholder="请选择收件人" style="width: 100%" @change="handleGameReceiverChange">
+                  <el-option v-for="(item, index) in users" :key="index" :label="item.useridentity" :value="item.userid"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="cancelEditGameReceiverForm">取 消</el-button>
+              <el-button type="primary" @click="submitEditGameReceiverForm">确 定</el-button>
+            </div>
+          </el-dialog>
+          </el-row>
         </el-tab-pane>
       </el-tabs>
     </el-row>
@@ -192,7 +235,7 @@
 </template>
 
 <script>
-  import { updateAlarmRule, updateAlarmReceiver, getDetail, addRule, editRule, deleteRule, multiDeleteRule, getInitialOptions } from "../api/api";
+  import { updateAlarmRule, updateAlarmReceiver, updateGameRule, getDetail, addRule, editRule, deleteRule, multiDeleteRule, getInitialOptions } from "../api/api";
 
   export default {
     name: "page3",
@@ -200,11 +243,11 @@
       return {
         // 游戏选项
         games: [],
-        gameValue: '',
+        // gameValue: '',
         // 规则选项
         rules: [],
-        alarmRuleValue: '',
-        gameRuleValue: '',
+        // alarmRuleValue: '',
+        // gameRuleValue: '',
         // 人员选项
         users: [],
 
@@ -223,16 +266,23 @@
         alarmRuleForm: {
           'rule_id': '',
         },
-        // 新增报警收件人表单
+        // 编辑报警收件人表单
         editAlarmReceiverForm: {
           'user_id_list': [],
         },
         editAlarmReceiverFormVisible: false,
+        editGameReceiverFormVisible: false,
         // 游戏报警表单
         gameRuleForm: {
-          'alarm_id': '',
+          'id': '',
           'game': '',
           'rule_id': '',
+        },
+        // 编辑游戏收件人表单
+        editGameReceiverForm: {
+          'id': '',
+          'game': '',
+          'user_id_list': [],
         },
         // 表单报警收件人选中项
         alarmReceiverChange: [],
@@ -274,26 +324,13 @@
         },
         editRuleId: 0,
         defaultRule: '',
-        messageType: ''
+        messageType: '',
+        testmsg: 'i am test'
       }
     },
     methods: {
       handleClick(tab, event) {
         console.log(tab, event);
-      },
-      handleSelectGame(value) {
-        // this.ruleValue = this.games.filter(data => data.game === value)[0].send_rules
-        let selectedGame = this.alarmGames.filter(data => data.game === value)[0];
-        this.alarmRuleValue = selectedGame.id;
-        this.gameRuleForm.game = selectedGame.game;
-        this.gameRuleForm.rule_id = selectedGame.rule_id;
-        this.gameReceivers = selectedGame.receivers;
-        // console.log('daying rule')
-        // console.log(this.ruleValue)
-      },
-      handleSelectRule(value) {
-        // console.log(this.alarmRuleValue)
-        // console.log(value)
       },
       // 保存报警规则
       handleSaveAlarmRule() {
@@ -313,8 +350,6 @@
         }).catch(() => {
 
         });
-        // 提交请求
-        // console.log(this.id)
       },
       // 列表报警收件人变化
       handleAlarmReceiverSelectionChange(val) {
@@ -331,30 +366,32 @@
         this.editAlarmReceiverFormVisible = true;
       },
       // 删除报警收件人
-      handleDeleteAlarmReceiver() {
-        this.$confirm('确认删除？').then(() => {
-          // let game = row.game;
-          // let receiver = row.receiver;
-          // let alarmId = this.id;
-          let userId = row.id;
-          let alarmId = this.id;
-
-          // this.delArr.push(GameOperationId);
-          deleteRule(GameOperationId).then(res => {
-            let data = res.data;
-            if (data.code === 1) {
-              this.messageType = 'success';
-              this.getAlarmDetail();
-            } else if (data.code === 0) {
-              this.messageType = 'error';
-            }
-            this.alertMessage(data.message);
-          })
-        })
-        .catch(() => {
-
-        });
-      },
+      // handleDeleteAlarmReceiver() {
+      //   this.$confirm('确认删除？').then(() => {
+      //     let deleteUserIdList = this.alarmReceiverSelection.map(data => data.userid);
+      //     console.log(deleteUserIdList)
+      //     // let game = row.game;
+      //     // let receiver = row.receiver;
+      //     // let alarmId = this.id;
+      //     let userId = row.id;
+      //     let alarmId = this.id;
+      //
+      //     // this.delArr.push(GameOperationId);
+      //     deleteRule(GameOperationId).then(res => {
+      //       let data = res.data;
+      //       if (data.code === 1) {
+      //         this.messageType = 'success';
+      //         this.getAlarmDetail();
+      //       } else if (data.code === 0) {
+      //         this.messageType = 'error';
+      //       }
+      //       this.alertMessage(data.message);
+      //     })
+      //   })
+      //   .catch(() => {
+      //
+      //   });
+      // },
       // 报警收件人选项变化
       handleAlarmReceiverChange(val) {
         this.alarmReceiverChange = val;
@@ -362,74 +399,145 @@
       },
       // 提交报警收件人
       submitEditAlarmReceiverForm() {
-        console.log(this.users)
-        let editAlarmReceiverForm = this.editAlarmReceiverForm;
         // let user_id_list = this.editAlarmReceiverForm.user_id_list;
         // console.log(that.editAlarmReceiverForm.user_id_list);
         this.$confirm('确认保存？').then(() => {
-          let data = editAlarmReceiverForm;
+          let data = this.editAlarmReceiverForm;
           let alarmId = this.id;
           updateAlarmReceiver(data, alarmId).then(res => {
             let data = res.data;
             if (data.code === 1) {
               this.messageType = 'success';
               let alarmData = data.alarm;
-              console.log(alarmData);
-              // console.log(alarmData.receivers.split(',').forEach(data => parseInt(data)));
-              // this.editAlarmReceiverForm.user_id_list = alarmData.receivers.split(',').forEach(data => parseInt(data))
+              let receiversId = alarmData.receivers.split(',').map(Number);
+              this.alarmReceivers = this.users.filter(item => receiversId.indexOf(item.userid) !== -1);
             } else if (data.code ===0) {
               this.messageType = 'error';
             }
             this.alertMessage(data.message);
           });
         })
-          .catch(() => {
-
+          .catch((e) => {
+            console.log(e)
           });
-        // console.log('333')
-        // console.log(this.editAlarmReceiverForm.user_id_list)
-        // updateAlarmReceiver
-        this.editAlarmReceiverForm.user_id_list = this.alarmReceiverChange;
-        // let
-        // console.log(this.editAlarmReceiverForm)
-        this.editAlarmReceiverForm.user_id = '';
-        this.editAlarmReceiverForm.alarm_id = '';
         this.editAlarmReceiverFormVisible = false;
       },
 
       cancelEditAlarmReceiverForm() {
-        this.editAlarmReceiverForm.user_id = '';
-        this.editAlarmReceiverForm.alarm_id = '';
         this.editAlarmReceiverFormVisible = false;
       },
+      // 选择游戏，改变默认选中规则
+      handleSelectGameRuleGame(value) {
+        let selectedGame = this.alarmGames.filter(data => data.game === value)[0];
+        this.gameRuleForm.id = selectedGame.id;
+        this.gameRuleForm.game = selectedGame.game;
+        this.gameRuleForm.rule_id = selectedGame.rule_id;
+        // this.gameReceivers = selectedGame.receivers;
+        // console.log('daying rule')
+        // console.log(this.ruleValue)
+      },
+      // 保存游戏发送规则
+      handleSaveGameRule() {
+        this.$confirm('确认保存？').then(() => {
+          let data = this.gameRuleForm;
+          updateGameRule(data, this.gameRuleForm.id).then(res => {
+            let data = res.data;
+            if (data.code === 1) {
+              this.messageType = 'success';
+            } else if (data.code ===0) {
+              this.messageType = 'error';
+            }
+            this.alertMessage(data.message);
+          });
+        }).catch(() => {
 
-      handleAddNew() {
-        getRuleFormOptions().then(res => {
-          let data = res.data;
-          if (data.code === 1) {
-            this.userList = data.user_list;
-            this.gameList = data.game_list;
-            this.sendRuleList = data.send_rule_list;
-            this.messageType = 'success';
-          }
-          this.alertMessage(data.message);
         });
-        this.dialogFormVisible = true;
-        this.ruleForm.title = '新建规则';
-        this.ruleForm.game = '';
-        this.ruleForm.receiver = '';
-        this.ruleForm.send_rule = this.defaultRule;
       },
-      handleEdit(index, row) {
-        this.dialogFormVisible = true;
-        this.editRuleId = row.id;
-        this.ruleForm.title = '编辑规则';
-        this.ruleForm.game = row.game;
-        this.ruleForm.receiver = row.receiver;
-        this.ruleForm.send_rule = row.send_rules;
-        // this.ruleForm.
-        // console.log(index, row);
+      // 改变游戏收件人选中项
+      handleGameReceiverSelectionChange() {
+
       },
+      //
+      handleSelectGameReceiverGame(value) {
+        let selectedGame = this.alarmGames.filter(data => data.game === value)[0];
+        this.editGameReceiverForm.id = selectedGame.id;
+        this.editGameReceiverForm.game = selectedGame.game;
+        this.editGameReceiverForm.rule_id = selectedGame.rule_id;
+        this.gameReceivers = selectedGame.receivers;
+      },
+      // 编辑游戏收件人表单
+      handleEditGameReceiver() {
+        // 清空默认收件人
+        // this.editAlarmReceiverForm.user_id_list = [];
+        this.editGameReceiverForm.user_id_list = [];
+        // 填充默认收件人
+        // console.log(this.alarmReceivers)
+        this.gameReceivers.forEach(data => this.editGameReceiverForm.user_id_list.push(data.userid));
+        // console.log(this.editAlarmReceiverForm.user_id_list)
+        this.editGameReceiverFormVisible = true;
+      },
+      // // 删除游戏收件人
+      // handleDeleteGameReceiver() {
+      //
+      // },
+      // 游戏收件人表单变化
+      handleGameReceiverChange() {
+
+      },
+      // 提交修改游戏收件人
+      submitEditGameReceiverForm() {
+        this.$confirm('确认保存？').then(() => {
+          let data = this.editAlarmReceiverForm;
+          let alarmId = this.id;
+          updateAlarmReceiver(data, alarmId).then(res => {
+            let data = res.data;
+            if (data.code === 1) {
+              this.messageType = 'success';
+              let alarmData = data.alarm;
+              let receiversId = alarmData.receivers.split(',').map(Number);
+              this.alarmReceivers = this.users.filter(item => receiversId.indexOf(item.userid) !== -1);
+            } else if (data.code ===0) {
+              this.messageType = 'error';
+            }
+            this.alertMessage(data.message);
+          });
+        })
+          .catch((e) => {
+            console.log(e)
+          });
+        this.editAlarmReceiverFormVisible = false;
+      },
+      // 取消修改游戏收件人
+      cancelEditGameReceiverForm() {
+        this.editGameReceiverFormVisible = false;
+      },
+      // handleAddNew() {
+      //   getRuleFormOptions().then(res => {
+      //     let data = res.data;
+      //     if (data.code === 1) {
+      //       this.userList = data.user_list;
+      //       this.gameList = data.game_list;
+      //       this.sendRuleList = data.send_rule_list;
+      //       this.messageType = 'success';
+      //     }
+      //     this.alertMessage(data.message);
+      //   });
+      //   this.dialogFormVisible = true;
+      //   this.ruleForm.title = '新建规则';
+      //   this.ruleForm.game = '';
+      //   this.ruleForm.receiver = '';
+      //   this.ruleForm.send_rule = this.defaultRule;
+      // },
+      // handleEdit(index, row) {
+      //   this.dialogFormVisible = true;
+      //   this.editRuleId = row.id;
+      //   this.ruleForm.title = '编辑规则';
+      //   this.ruleForm.game = row.game;
+      //   this.ruleForm.receiver = row.receiver;
+      //   this.ruleForm.send_rule = row.send_rules;
+      //   // this.ruleForm.
+      //   // console.log(index, row);
+      // },
       handleSelectionChange(val) {
         this.multipleSelection = val;
         // console.log(val)
@@ -492,7 +600,9 @@
 
             this.gameRuleForm.game = '';
             this.gameRuleForm.rule_id = '';
-
+            this.editGameReceiverForm.id = '';
+            this.editGameReceiverForm.game = '';
+            this.gameReceivers = [];
 
             this.hasGameSettings = data.alarm_rule_dict.receivers_by_games;
 
