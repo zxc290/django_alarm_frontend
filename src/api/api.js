@@ -71,3 +71,8 @@ export const updateGameRule = (params, id) => {
 export const updateGameReceiver = (params, id) => {
   return axios.put(`${base}/update_game_receiver/${id}/`, params)
 };
+
+// 请求登录
+export const login = params => {
+  return axios.post(`${base}/login`, params)
+};

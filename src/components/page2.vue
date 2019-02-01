@@ -83,7 +83,7 @@
 </template>
 
 <script>
-  import { getDetail, getInitialOptions, getUser, getGame, getRule, addRule, editRule, deleteRule, multiDeleteRule } from "../api/api";
+  import { getDetail, getUser, getGame, getRule, addRule, editRule, deleteRule, multiDeleteRule } from "../api/api";
 
   export default {
     name: "page2",

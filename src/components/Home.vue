@@ -3,15 +3,16 @@
     <el-container>
       <!--页面头部-->
       <el-header>
-        <h2 class="headlogo">报警邮件规则</h2>
+
       </el-header>
 
       <el-container>
         <!--左边栏-->
         <el-aside width="200px">
-              <el-menu :data="menuData"  default-active="this.$router.path" router class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" >
+              <el-menu :data="menuData" router class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" >
                 <!--<el-menu-item :route="{path: item.url, params:{test:'123'}}">-->
-                  <el-menu-item v-for="(item, index) in menuData" :key="index" :index="'' + index" :route="{name: 'rulelist', params: {id: item.id}}">
+                  <!--<el-menu-item v-for="(item, index) in menuData" :key="index" :index="'' + index" :route="{name: 'rulelist', params: {id: item.id}}">-->
+                  <el-menu-item v-for="(item, index) in menuData" :key="index" :index="item.description" :route="{name: 'rulelist', params: {id: item.id}}">
                   <i class="el-icon-menu"></i>
                   <span slot="title">{{item.description}}</span>
                 </el-menu-item>
@@ -70,7 +71,7 @@ export default {
       //   // }
       // },
     },
-    mounted(){
+    created() {
       getAlarmRuleList().then(res => {
         let data = res.data;
         if (data.code ===1) {
