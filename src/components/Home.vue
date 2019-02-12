@@ -54,7 +54,6 @@ export default {
         //   type: this.messageType
         // });
           this.$notify({
-            title: '成功',
             message: message,
             type: this.messageType
           });
