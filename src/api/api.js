@@ -62,9 +62,18 @@ export const updateAlarmReceiver = (params, id) => {
   return axios.put(`${base}/update_alarm_receiver/${id}/`, params)
 };
 
+// 新增游戏发送规则
+export const addGameRule = (params) => {
+  return axios.post(`${base}/add_game_rule/`, params)
+};
+
 // 更新游戏发送规则
 export const updateGameRule = (params, id) => {
   return axios.put(`${base}/update_game_rule/${id}/`, params)
+};
+
+export const deleteGameRule = (id) => {
+  return axios.delete(`${base}/delete_game_rule/${id}/`)
 };
 
 // 更新游戏收件人

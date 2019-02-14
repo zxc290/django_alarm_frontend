@@ -123,17 +123,43 @@
               <!--</el-table-column>-->
             </el-table>
 
-            <!--游戏发送收件人编辑弹出表单-->
-            <el-dialog :title="editGameRuleForm.title" :visible.sync="editGameRuleFormVisible" center>
+            <!--游戏发送规则新增表单-->
+            <el-dialog title="新增游戏规则" :visible.sync="addGameRuleFormVisible" center>
+              <el-form ref="form" :model="addGameRuleForm">
+                <!--<el-form-item label="游戏规则id" :label-width="formLabelWidth" v-show="false">-->
+                  <!--<el-input v-model="editGameRuleForm.id"></el-input>-->
+                <!--</el-form-item>-->
+                <!--<el-form-item label="游戏" :label-width="formLabelWidth">-->
+                <!--<el-input v-model="editGameRuleForm.game"></el-input>-->
+                <!--</el-form-item>-->
+                <el-form-item label="游戏" :label-width="formLabelWidth">
+                  <el-select v-model="addGameRuleForm.game_id" placeholder="请选择游戏" style="width: 100%" @change="addRuleFormGameChange">
+                    <el-option v-for="(item, index) in games" :key="index" :label="item.gname" :value="item.gid"></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="规则" :label-width="formLabelWidth">
+                  <el-select v-model="addGameRuleForm.rule_id" placeholder="请选择规则" style="width: 100%" @change="addRuleFormRuleChange">
+                    <el-option v-for="(item, index) in rules" :key="index" :label="item.description" :value="item.id"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-form>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="cancelAddGameRuleForm">取 消</el-button>
+                <el-button type="primary" @click="submitAddGameRuleForm">确 定</el-button>
+              </div>
+            </el-dialog>
+
+            <!--游戏发送规则编辑表单-->
+            <el-dialog title="编辑游戏规则" :visible.sync="editGameRuleFormVisible" center>
               <el-form ref="form" :model="editGameRuleForm">
-                <el-form-item label="游戏规则id" :label-width="formLabelWidth">
+                <el-form-item label="游戏规则id" :label-width="formLabelWidth" v-show="false">
                   <el-input v-model="editGameRuleForm.id"></el-input>
                 </el-form-item>
                 <!--<el-form-item label="游戏" :label-width="formLabelWidth">-->
                   <!--<el-input v-model="editGameRuleForm.game"></el-input>-->
                 <!--</el-form-item>-->
                 <el-form-item label="游戏" :label-width="formLabelWidth">
-                  <el-select v-model="editGameRuleForm.game" placeholder="请选择游戏" style="width: 100%">
+                  <el-select v-model="editGameRuleForm.game" placeholder="请选择游戏" style="width: 100%" v-show="false">
                     <el-option v-for="(item, index) in games" :key="index" :label="item.gname" :value="item.gid"></el-option>
                   </el-select>
                 </el-form-item>
@@ -228,7 +254,7 @@
 </template>
 
 <script>
-  import { updateAlarmRule, updateAlarmReceiver, updateGameRule, updateGameReceiver, getDetail, getInitialOptions } from "../api/api";
+  import { updateAlarmRule, updateAlarmReceiver, addGameRule, updateGameRule, deleteGameRule, updateGameReceiver, getDetail, getInitialOptions } from "../api/api";
 
   export default {
     name: "page3",
@@ -270,6 +296,7 @@
           'user_id_list': [],
         },
         editAlarmReceiverFormVisible: false,
+        addGameRuleFormVisible: false,
         editGameRuleFormVisible: false,
         editGameReceiverFormVisible: false,
         // 游戏报警表单
@@ -287,9 +314,13 @@
             { required: true, message: '请选择规则', trigger: 'change' }
           ]
         },
+        addGameRuleForm: {
+          'alarm_id': '',
+          'game_id': '',
+          'rule_id': '',
+        },
         // 编辑游戏规则表单
         editGameRuleForm: {
-          'title': '',
           'id': '',
           'game': '',
           'rule_id': '',
@@ -362,11 +393,65 @@
       },
       // 新增游戏规则
       handleAddGameRule() {
-        this.editGameRuleForm.title = '新增游戏规则';
-        this.editGameRuleForm.id = '';
-        this.editGameRuleForm.game = '';
-        this.editGameRuleForm.rule_id = '';
-        this.editGameRuleFormVisible = true;
+        this.addGameRuleForm.alarm_id = this.id;
+        this.addGameRuleForm.game_id = '';
+        this.addGameRuleForm.rule_id = '';
+        this.addGameRuleFormVisible = true;
+      },
+      addRuleFormGameChange(val) {
+        this.addGameRuleForm.game_id = val;
+      },
+      addRuleFormRuleChange(val) {
+        this.addGameRuleForm.rule_id = val;
+      },
+      submitAddGameRuleForm() {
+        // // 当前无此游戏规则才允许添加
+        if (!this.alarmGames.find(data => data.game === this.games.find(data => data.gid === this.addGameRuleForm.game_id).gname)) {
+          this.$confirm('确认新增？').then(() => {
+            addGameRule(this.addGameRuleForm).then(res => {
+              let data = res.data;
+              if (data.code === 1) {
+                this.messageType = 'success';
+                let gameOperationData = data.game_operation;
+                gameOperationData.receivers = [];
+                gameOperationData.rule_id = this.rules.find(data => data.id === gameOperationData.rules).description;
+                this.alarmGames.push(gameOperationData);
+                // this.alarmGames.find(item => item.id === gameOperationData.id).rule_id = this.rules.find(item => item.id === gameOperationData.rules).description;
+              } else if (data.code ===0) {
+                this.messageType = 'error';
+              }
+              this.alertMessage(data.message);
+            });
+          })
+            .catch((e) => {
+              console.log(e)
+            });
+        } else {
+          let message = '该游戏规则已存在，请直接修改';
+          this.messageType = 'error';
+          this.alertMessage(message)
+        }
+        // this.$confirm('确认新增？').then(() => {
+        //   addGameRule(this.addGameRuleForm).then(res => {
+        //     let data = res.data;
+        //     if (data.code === 1) {
+        //       this.messageType = 'success';
+        //       let gameOperationData = data.game_operation;
+        //       this.alarmGames.find(item => item.id === gameOperationData.id).rule_id = this.rules.find(item => item.id === gameOperationData.rules).description;
+        //       this.editGameRuleFormVisible = false;
+        //     } else if (data.code ===0) {
+        //       this.messageType = 'error';
+        //     }
+        //     this.alertMessage(data.message);
+        //   });
+        // })
+        //   .catch((e) => {
+        //
+        //   });
+        this.addGameRuleFormVisible = false;
+      },
+      cancelAddGameRuleForm() {
+        this.addGameRuleFormVisible = false;
       },
       // 弹出编辑游戏规则表单
       handleEditGameRule(index, row) {
@@ -378,7 +463,25 @@
       },
       // 删除游戏规则
       handleDeleteGameRule(index, row) {
+        console.log(row)
+        console.log(this.alarmGames)
+        this.$confirm('确认删除？').then(() => {
+          deleteGameRule(row.id).then(res => {
+            let data = res.data;
+            if (data.code === 1) {
+              this.messageType = 'success';
+              this.alarmGames = this.alarmGames.filter(data => data.id !== row.id);
+              this.editGameRuleFormVisible = false;
+            } else if (data.code ===0) {
+              this.messageType = 'error';
+            }
+            this.alertMessage(data.message);
+          });
+        })
+          .catch((e) => {
 
+          });
+        // this.editGameReceiverFormVisible = false;
       },
       // 提交编辑游戏规则表单
       submitEditGameRuleForm() {
@@ -458,7 +561,7 @@
       getAlarmDetail() {
         getDetail(this.id).then(res => {
           let data = res.data;
-          if (data.code ===1 ) {
+          if (data.code === 1 ) {
             this.messageType = 'success';
             this.gameRuleForm.game = '';
             this.gameRuleForm.rule_id = '';
@@ -500,14 +603,17 @@
       getInitialOptions().then(res => {
         let data = res.data;
         if (data.code === 1) {
+
           this.users = data.users;
           this.games = data.games;
           this.rules = data.rules;
           this.messageType = 'success';
+          // 获取默认激活的报警信息
+          this.getAlarmDetail();
+        } else if (data.code === 2) {
+          this.handleTokenExpired(data.message);
         }
         this.alertMessage(data.message);
-        // 获取默认激活的报警信息
-        this.getAlarmDetail();
       });
     },
     computed: {
